@@ -1,0 +1,172 @@
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Dashboard</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Dashboard v1</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Main row -->
+            <div class="row">
+                <!-- Left col -->
+                <section class="col-lg-12 connectedSortable">
+
+                    <!-- DIRECT CHAT -->
+                    <div class="card direct-chat direct-chat-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Direct Chat</h3>
+
+                            <div class="card-tools">
+                                <span title="3 New Messages" class="badge badge-primary">3</span>
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <button type="button" class="btn btn-tool" title="Contacts"
+                                    data-widget="chat-pane-toggle">
+                                    <i class="fas fa-comments"></i>
+                                </button>
+                                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <!-- Conversations are loaded here -->
+                            <div class="direct-chat-messages" id="board">
+                                <!-- Message. Default to the left -->
+                                
+                                <!-- /.direct-chat-msg -->
+
+                                <!-- Message to the right -->
+                                
+                                <!-- /.direct-chat-msg -->
+
+                            </div>
+                            <!--/.direct-chat-messages-->
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            
+                            <div class="input-group">
+                                <input id="seed_sentence" type="text" name="message" placeholder="Type Message ..."
+                                    class="form-control">
+                                <span class="input-group-append">
+                                    <button id="create_btn" type="button" class="btn btn-primary">Send</button>
+                                </span>
+                            </div>
+                            
+                        </div>
+                        <!-- /.card-footer-->
+                    </div>
+                    <!--/.direct-chat -->
+
+
+                </section>
+                <!-- /.Left col -->
+            </div>
+            <!-- /.row (main row) -->
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+<script>
+    $('#seed_sentence').on('keypress', e=>{
+        if(e.keyCode == 13){
+            console.log('엔터')
+            $('#create_btn').trigger('click')
+        }
+    })
+    $('#create_btn').on('click', ()=>{
+        // 1. 입력값 추출
+        let seed_sentence = $('#seed_sentence').val()
+        // 2. 입력창 비운다
+        $('#seed_sentence').val('')
+        // 3. 추출한 시드 문장을 채팅 메인 화면에 세팅
+        set_my_chat( seed_sentence )
+        // 4. 서버로 시드 문장 전송(문장 생성을 요청한다 )
+        socket.emit('cTos_create_sentence', {seed:seed_sentence})
+    })
+    function set_my_chat( msg )
+    {
+        $('#board').append( `
+            <div class="direct-chat-msg right">
+                <div class="direct-chat-infos clearfix">
+                    <span class="direct-chat-name float-right">Sarah Bullock</span>
+                    <span class="direct-chat-timestamp float-left">23 Jan 2:05 pm</span>
+                </div>
+                <!-- /.direct-chat-infos -->
+                <img class="direct-chat-img" src="/static/dist/img/user3-128x128.jpg"
+                    alt="message user image">
+                <!-- /.direct-chat-img -->
+                <div class="direct-chat-text">
+                    ${msg}
+                </div>
+                <!-- /.direct-chat-text -->
+            </div>
+        `) 
+        scroll_chat()       
+    }
+    function set_you_chat( msg )
+    {
+        $('#board').append( `
+            <div class="direct-chat-msg">
+                <div class="direct-chat-infos clearfix">
+                    <span class="direct-chat-name float-left">GPT</span>
+                    <span class="direct-chat-timestamp float-right">23 Jan 2:00 pm</span>
+                </div>
+                <!-- /.direct-chat-infos -->
+                <img class="direct-chat-img" src="/static/dist/img/user1-128x128.jpg"
+                    alt="message user image">
+                <!-- /.direct-chat-img -->
+                <div class="direct-chat-text">
+                    ${msg}
+                </div>
+                <!-- /.direct-chat-text -->
+            </div>
+        `)
+        scroll_chat()
+    }
+
+    function scroll_chat()
+    {
+        $('#board')
+        .stop()
+        .animate({ scrollTop: $('#board')[0].scrollHeight }, 1000);
+    }
+    let url = `http://${ document.domain }:${ location.port }`
+    console.log( url )
+    // 서버측에 접속 요청
+    const socket = io(url);
+    // 소켓에 이벤트 등록 -> 클라이언트와 서버는 이벤트를 발생시켜서 서로 통신한다
+    // 이벤트명은 몇개의 정해진 이름 + 사용자 정의하는 이벤트명으로 구성
+    // connect 이벤트는 클라이언트가 접속했다라는 이벤트
+    socket.on('connect', ()=>{
+        console.log('서버에 접속 되었다')
+        // 클라이언트 => 서버 : 메시지 전송, 이벤트 기반, 
+        //              메세지형태 :js(객체), 데이터(json), python(딕셔너리)
+        //socket.emit('cTos_simple_msg', {msg:'근육이 커지기 위해서는'})
+    })
+    socket.on('sToc_simple_msg', data=>{
+        console.log( data )
+    })
+    socket.on('sToc_create_sentence', data=>{
+        // 서버가 생성하는 문장을 지속적으로 붙여서 문장을 동적으로 표현
+        set_you_chat( data.word+" " )
+    })
+</script>
