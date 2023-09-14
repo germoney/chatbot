@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% include "head.html" %}
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=b7e671fa21514da897f84bdf05960122"></script>
+  <style>
+    .map_div {
+      position: absolute;
+    }
+    .map_div_top1 {
+      position:absolute;top:10px;left:300px;
+    }
+  </style>
+</head>
+
+<body class="hold-transition sidebar-mini layout-fixed">
+  <div class="wrapper">
+    {% include "navi.html" %}
+    {% include "side.html" %}
+
+    {% include "pages/map_sub.html" %}
+
+    {% include "foot.html" %}
+    {% include "condi.html" %}
+  </div>
+  <!-- ./wrapper -->
+  {% include "script.html" %}
+  <script>
+		var container = document.getElementById('map');
+		var options = {
+			center: new kakao.maps.LatLng(33.450701, 126.570667),
+			level: 3
+		};
+    //const map_parent = document.querySelector('#map_parent');
+    //map.style.height= map_parent.scrollHeight + "px";
+
+		var map = new kakao.maps.Map(container, options);
+    resize_map();
+    
+    window.addEventListener("resize", ()=>{
+      resize_map();
+    });
+
+    function resize_map() {
+      console.log('지도 위치 조정')
+      var mapContainer = document.getElementById('map');
+      //mapContainer.style.width = '650px';
+      let h = $(window).height()
+      mapContainer.style.height = `${h}px`; 
+      map.relayout();
+    }
+	</script>
+</body>
+
+</html>
